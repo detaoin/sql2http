@@ -62,11 +62,8 @@ func logRequest(req *http.Request, params map[string]string, code int, err error
 	if u != nil {
 		user = fmt.Sprintf(" user:%s", u.Name)
 	}
-	hosts, e := net.LookupAddr(req.RemoteAddr)
-	remote := ""
-	if e == nil && len(hosts) > 0 {
-		remote = "[" + hosts[0] + "]"
-	}
+	remote, _, _ := net.SplitHostPort(req.RemoteAddr)
+	hosts, _ := net.LookupAddr(remote)
 	errstring := ""
 	if code >= 400 || err != nil {
 		errstring = " ERROR"
@@ -77,5 +74,5 @@ func logRequest(req *http.Request, params map[string]string, code int, err error
 	if err != nil {
 		errstring += ": " + err.Error()
 	}
-	log.Printf("%v %v %v params:%q%s ip:%s%s%s", req.Method, req.URL, code, params, user, req.RemoteAddr, remote, errstring)
+	log.Printf("%v %v %v params:%q%s ip:%s%v%s", req.Method, req.URL, code, params, user, req.RemoteAddr, hosts, errstring)
 }
