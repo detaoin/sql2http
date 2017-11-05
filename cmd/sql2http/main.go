@@ -85,5 +85,4 @@ func main() {
 	default:
 		fatal(fmt.Errorf("unhandled mode: %v", mode))
 	}
-	log.Println("clean exit")
 }
