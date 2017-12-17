@@ -17,6 +17,7 @@ var DefaultTemplates = map[string]Template{
 	".tsv":  &CSVTemplate{Comma: '\t'},
 	".tex":  DefaultTeXTemplate,
 	".html": DefaultHTMLTemplate,
+	".xlsx": &XLSXTemplate{},
 }
 
 var TemplateFuncs = map[string]interface{}{
