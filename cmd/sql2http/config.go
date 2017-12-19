@@ -87,16 +87,18 @@ func (c *Config) Handler() (*sql2http.Handler, error) {
 			if t2, e := t.ParseGlob(filepath.Join(prefix+".templates", "_*.html")); e == nil {
 				t = t2
 			}
-			tmpl = t
+			tmpl = sql2http.WrapStandardTemplate(t, "text/html")
 		case ".tex":
 			var t *template.Template
 			t, err = template.New(filepath.Base(path)).Delims("(", ")").Funcs(sql2http.TemplateFuncs).ParseFiles(path)
 			if t2, e := t.ParseGlob(filepath.Join(prefix+".templates", "_*.tex")); e == nil {
 				t = t2
 			}
-			tmpl = t
+			tmpl = sql2http.WrapStandardTemplate(t, "text/x-tex")
 		default:
-			tmpl, err = template.ParseFiles(path)
+			var t *template.Template
+			t, err = template.ParseFiles(path)
+			tmpl = sql2http.WrapStandardTemplate(t, "")
 		}
 		if err != nil {
 			return nil, err

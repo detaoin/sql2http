@@ -21,16 +21,30 @@ func (t *XLSXTemplate) Execute(wr io.Writer, data interface{}) error {
 		return fmt.Errorf("output xlsx: only *Response can be passed as data")
 	}
 	out := xlsx.NewFile()
-	now := resp.Timestamp.Format("2006-01-02 15:04:05")
 	for _, tbl := range resp.Results {
-		sh, err := out.AddSheet(fmt.Sprintf("%v (%v)", tbl.Name, now))
+		name := tbl.Name
+		if name == "" {
+			name = "default"
+		}
+		sh, err := out.AddSheet(name)
 		if err != nil {
 			return fmt.Errorf("output xlsx: error creating new sheet: %v", err)
 		}
-		sh.AddRow().WriteSlice(&tbl.Header, 0)
-		for _, row := range tbl.Rows {
-			sh.AddRow().WriteSlice(&row.Values, 0)
+		n := sh.AddRow().WriteSlice(&tbl.Header, -1)
+		if n != len(tbl.Header) {
+			return fmt.Errorf("output xlsx[%s]: write header row fail (%d/%d)", name, n, len(tbl.Header))
+		}
+		for i, row := range tbl.Rows {
+			n := sh.AddRow().WriteSlice(&row.Values, -1)
+			if n != len(row.Values) {
+				return fmt.Errorf("output xlsx[%s:%d]: write data row fail (%d/%d)", name, i, n, len(row.Values))
+			}
 		}
 	}
 	return out.Write(wr)
+}
+
+func (t *XLSXTemplate) ContentType() string {
+	// https://blogs.msdn.microsoft.com/vsofficedeveloper/2008/05/08/office-2007-file-format-mime-types-for-http-content-streaming-2/
+	return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 }

@@ -17,3 +17,7 @@ func (t *JSONTemplate) Execute(wr io.Writer, data interface{}) error {
 	}
 	return json.NewEncoder(wr).Encode(resp)
 }
+
+func (t *JSONTemplate) ContentType() string {
+	return "application/json; charset=utf-8"
+}

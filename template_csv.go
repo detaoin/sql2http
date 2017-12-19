@@ -34,3 +34,7 @@ func (t *CSVTemplate) Execute(wr io.Writer, data interface{}) error {
 	out.Flush()
 	return out.Error()
 }
+
+func (t *CSVTemplate) ContentType() string {
+	return "text/csv"
+}

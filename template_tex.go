@@ -4,7 +4,10 @@ import (
 	"text/template"
 )
 
-var DefaultTeXTemplate = template.Must(template.New("default.tex").Delims("((", "))").Funcs(TemplateFuncs).Parse(defaultTeX))
+var DefaultTeXTemplate = WrapStandardTemplate(
+	template.Must(template.New("default.tex").Delims("((", "))").Funcs(TemplateFuncs).Parse(defaultTeX)),
+	"text/x-tex; charset=utf-8",
+)
 
 const defaultTeX = `\documentclass[a4paper]{article}
 \usepackage[utf8]{inputenc}

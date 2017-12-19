@@ -4,7 +4,10 @@ import (
 	"html/template"
 )
 
-var DefaultHTMLTemplate = template.Must(template.New("default.html").Funcs(TemplateFuncs).Parse(defaultHTML))
+var DefaultHTMLTemplate = WrapStandardTemplate(
+	template.Must(template.New("default.html").Funcs(TemplateFuncs).Parse(defaultHTML)),
+	"text/html; charset=utf-8",
+)
 
 const defaultHTML = `<!DOCTYPE html>
 <html>

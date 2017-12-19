@@ -6,8 +6,30 @@ import (
 	"strings"
 )
 
-type Template interface {
+// Executer wraps method Execute. Both text/template.Template
+// and html/template.Template implement this interface.
+type Executer interface {
+	// Execute the template with data, and write the output to wr.
 	Execute(wr io.Writer, data interface{}) error
+}
+
+type Template interface {
+	Executer
+	// string to return with the Content-Type Header value.
+	ContentType() string
+}
+
+type executerWithContentType struct {
+	e           Executer
+	contentType string
+}
+
+func (e *executerWithContentType) Execute(wr io.Writer, data interface{}) error { return e.e.Execute(wr, data) }
+
+func (e *executerWithContentType) ContentType() string { return e.contentType }
+
+func WrapStandardTemplate(t Executer, contentType string) Template {
+	return &executerWithContentType{t, contentType}
 }
 
 // default templates associated with their respective file extension.

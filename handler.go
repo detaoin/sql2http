@@ -161,7 +161,10 @@ func (h *Handler) ServeHTTP(wr http.ResponseWriter, req *http.Request) {
 		h.Log(req, resp.Params, http.StatusSeeOther, nil)
 		return
 	}
-	// TODO: explicitly set mime type to tmpl.Mime()
+
+	if mime := tmpl.ContentType(); mime != "" {
+		wr.Header().Set("Content-Type", mime)
+	}
 	buf := &bytes.Buffer{}
 	if err := tmpl.Execute(buf, resp); err != nil {
 		http.Error(wr, err.Error(), http.StatusInternalServerError)
