@@ -26,9 +26,13 @@ func (t *CSVTemplate) Execute(wr io.Writer, data interface{}) error {
 		if i > 0 { // separate tables with an empty line
 			out.Write([]string{})
 		}
+		vals := make([]string, len(tbl.Header))
 		out.Write(tbl.Header)
 		for _, row := range tbl.Rows {
-			out.Write(row.Values)
+			for i := range row.Values {
+				vals[i] = fmt.Sprint(row.Values[i])
+			}
+			out.Write(vals)
 		}
 	}
 	out.Flush()

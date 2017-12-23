@@ -246,10 +246,10 @@ func (t Tables) MarshalJSON() ([]byte, error) {
 
 type Row struct {
 	Header []string
-	Values []string
+	Values []interface{}
 }
 
-func (r Row) Get(col string) (string, error) {
+func (r Row) Get(col string) (interface{}, error) {
 	for i, h := range r.Header {
 		if h == col {
 			return r.Values[i], nil
@@ -258,10 +258,10 @@ func (r Row) Get(col string) (string, error) {
 	return "", fmt.Errorf("sql2http: row element %q not found", col)
 }
 
-func (r Row) Slice() []string { return r.Values }
+func (r Row) Slice() []interface{} { return r.Values }
 
 func (r Row) MarshalJSON() ([]byte, error) {
-	m := make(map[string]string)
+	m := make(map[string]interface{})
 	for i, h := range r.Header {
 		m[h] = r.Values[i]
 	}
@@ -273,13 +273,12 @@ func readTable(rows *sql.Rows) (tbl Table, err error) {
 	if len(tbl.Header) < 1 {
 		return
 	}
-	dest := make([]interface{}, len(tbl.Header))
 	for rows.Next() {
-		row := make([]string, len(tbl.Header))
-		for i := range dest {
-			dest[i] = &row[i]
+		row := make([]interface{}, len(tbl.Header))
+		for i := range row {
+			row[i] = new(interface{})
 		}
-		if e := rows.Scan(dest...); e == nil {
+		if e := rows.Scan(row...); e == nil {
 			tbl.Rows = append(tbl.Rows, Row{tbl.Header, row})
 		}
 	}
