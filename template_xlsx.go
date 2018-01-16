@@ -26,6 +26,9 @@ func (t *XLSXTemplate) Execute(wr io.Writer, data interface{}) error {
 		if name == "" {
 			name = "default"
 		}
+		if len(name) > 30 {
+			name = name[:27] + "..."
+		}
 		sh, err := out.AddSheet(name)
 		if err != nil {
 			return fmt.Errorf("output xlsx: error creating new sheet: %v", err)
