@@ -2,87 +2,29 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
 	"net/http"
-	"net/http/cgi"
 	"os"
 	"path/filepath"
 
 	"github.com/detaoin/sql2http"
-	"github.com/detaoin/sql2http/auth"
+	_ "github.com/detaoin/sql2http/template/csv"
+	_ "github.com/detaoin/sql2http/template/html"
+	_ "github.com/detaoin/sql2http/template/json"
+	_ "github.com/detaoin/sql2http/template/tex"
+	_ "github.com/detaoin/sql2http/template/xlsx"
 )
 
-// command-line flags
-var (
-	fHTTP = flag.String("http", ":8888", "launch a local http server and listen on `address`")
-)
-
-type Mode int
-
-// modes
-const (
-	mUnknown Mode = iota
-	mHTTP
-	mCGI
-)
-
-var Version = "development"
-
-var (
-	// prefix is the filename prefix used to find configuration files. By
-	// default it is this executable filename with all filename extensions
-	// stripped.
-	prefix string
-
-	// HTTP or CGI mode
-	mode Mode
-
-	// holds the parsed configuration data.
-	config = &Config{}
-
-	// the sql2http Handler
-	handler *sql2http.Handler
-)
+var addr = flag.String("http", ":8080", "address to expose the http service")
 
 func main() {
 	flag.Parse()
-	os.Chdir(filepath.Dir(os.Args[0]))
-	prefix = filepath.Base(os.Args[0])
-	ext := filepath.Ext(prefix)
-	prefix = prefix[:len(prefix)-len(ext)]
-	mode = mHTTP
-	req, err := cgi.Request()
-	if err == nil && req != nil {
-		mode = mCGI
+	base := filepath.Base(os.Args[0])
+	base = base[:len(base)-len(filepath.Ext(base))]
+	mux := &sql2http.Router{}
+	if err := parseConfig(base, mux); err != nil {
+		log.Fatalln(err)
 	}
-	initlog()
-
-	fatal(config.Parse(prefix))
-
-	handler, err = config.Handler()
-	fatal(err)
-	mux := http.NewServeMux()
-	mux.Handle("/", handler)
-	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(prefix+".static"))))
-	website := http.Handler(mux)
-	if config.Auth != nil { // wrap mux with authentication stuff
-		mux.HandleFunc("/auth/login", loginHandler)
-		mux.HandleFunc("/auth/logout", logoutHandler)
-		users := make(map[string]*auth.UserPass)
-		for _, u := range config.Auth.Users {
-			users[u.Name] = u
-		}
-		website = auth.Handler(mux, users, []byte(config.Auth.Secret))
-	}
-
-	switch mode {
-	case mHTTP:
-		log.Println("now listening on", *fHTTP)
-		fatal(http.ListenAndServe(*fHTTP, website))
-	case mCGI:
-		fatal(ServeCGI(website, req))
-	default:
-		fatal(fmt.Errorf("unhandled mode: %v", mode))
-	}
+	log.Println("db connected:", mux.Stats())
+	log.Fatalln(http.ListenAndServe(*addr, mux))
 }
