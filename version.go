@@ -1,3 +1,3 @@
 package sql2http
 
-const Version = "0"
+const version = "development"

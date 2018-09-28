@@ -4,24 +4,28 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/detaoin/sql2http"
 	"github.com/tealeg/xlsx"
 )
+
+const Ext = ".xlsx"
+
+func init() {
+	sql2http.DefaultTemplateSet.Register(Ext, &XLSXTemplate{})
+}
 
 // XLSXTemplate implements interface Template by writing with csv.Encode the
 // SQL query rows to the io.Writer. Each individual SQL query result set is
 // separated by an empty line.
-type XLSXTemplate struct {
-	Comma   rune // default ','; e.g. use '\t' for tab-separated values
-	UseCRLF bool // use "\r\n" end-of-line character instead of "\n"
-}
+type XLSXTemplate struct {}
 
 func (t *XLSXTemplate) Execute(wr io.Writer, data interface{}) error {
-	resp, ok := data.(*Response)
+	resp, ok := data.(*sql2http.Result)
 	if !ok {
-		return fmt.Errorf("output xlsx: only *Response can be passed as data")
+		return fmt.Errorf("template/xlsx: only *sql2http.Results can be passed as data")
 	}
 	out := xlsx.NewFile()
-	for _, tbl := range resp.Results {
+	for _, tbl := range resp.Tables {
 		name := tbl.Name
 		if name == "" {
 			name = "default"
@@ -31,16 +35,16 @@ func (t *XLSXTemplate) Execute(wr io.Writer, data interface{}) error {
 		}
 		sh, err := out.AddSheet(name)
 		if err != nil {
-			return fmt.Errorf("output xlsx: error creating new sheet: %v", err)
+			return fmt.Errorf("template/xlsx: error creating new sheet: %v", err)
 		}
 		n := sh.AddRow().WriteSlice(&tbl.Header, -1)
 		if n != len(tbl.Header) {
-			return fmt.Errorf("output xlsx[%s]: write header row fail (%d/%d)", name, n, len(tbl.Header))
+			return fmt.Errorf("template/xlsx[%s]: write header row fail (wrote only %d/%d values)", name, n, len(tbl.Header))
 		}
 		for i, row := range tbl.Rows {
 			n := sh.AddRow().WriteSlice(&row.Values, -1)
 			if n != len(row.Values) {
-				return fmt.Errorf("output xlsx[%s:%d]: write data row fail (%d/%d)", name, i, n, len(row.Values))
+				return fmt.Errorf("template/xlsx[%s:%d]: write data row fail (wrote only %d/%d values)", name, i, n, len(row.Values))
 			}
 		}
 	}
