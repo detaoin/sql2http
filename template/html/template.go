@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	gopath "path"
 	"path/filepath"
 	"strings"
 
@@ -69,6 +70,7 @@ func ParseTree(dir string) (*Template, error) {
 			return err
 		}
 		name = strings.TrimSuffix(name, Ext)
+		name = gopath.Clean("/" + filepath.ToSlash(name))
 		b, err := ioutil.ReadFile(path)
 		if err != nil {
 			return err
