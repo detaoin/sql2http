@@ -10,27 +10,42 @@ import (
 	"unicode/utf8"
 
 	"github.com/detaoin/sql2http"
-	"github.com/detaoin/sql2http/template/html"
-	"github.com/detaoin/sql2http/template/tex"
 )
 
+// parseConfig tries to parse the configuration file. It can be either of:
+//
+//     `base`.conf: custom configuration format
+//     `base`.yaml: YAML based configuration format
+//
+// However if both files exist, an error is returned.
 func parseConfig(base string, mux *sql2http.Router) error {
-	file := base + ".conf"
+	fileCONF := base + ".conf"
+	fileYAML := base + ".yaml"
+	_, errCONF := os.Stat(fileCONF)
+	_, errYAML := os.Stat(fileYAML)
+	if errCONF == nil && errYAML == nil {
+		return fmt.Errorf("both %v and %v config files exist", fileCONF, fileYAML)
+	}
+	tmpls := parseTemplates(base + ".template")
+	if errCONF == nil {
+		return parseCONF(fileCONF, mux, tmpls)
+	}
+	if errYAML == nil {
+		return parseYAML(fileYAML, mux, tmpls)
+	}
+	return fmt.Errorf("config file not found (looking for %v or %v)", fileCONF, fileYAML)
+}
+
+func parseCONF(file string, mux *sql2http.Router, templates *Templates) error {
 	f, err := os.Open(file)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
 
-	p := &parser{Router: mux}
-	p.tmplHtml, _ = html.ParseTree(base + ".templates")
-	p.tmplTex, _ = tex.ParseTree(base + ".templates")
-	p.tmpls = sql2http.DefaultTemplateSet
-	if t := p.tmplHtml.Lookup("_default"); t != nil {
-		p.tmpls.Register(html.Ext, t)
-	}
-	if t := p.tmplTex.Lookup("_default"); t != nil {
-		p.tmpls.Register(html.Ext, t)
+	p := &parser{
+		Router: mux,
+		tmpls:  templates,
 	}
 	lines := bufio.NewScanner(f)
 	i := 0
@@ -72,9 +87,7 @@ type parser struct {
 	queries []sql2http.Query
 	query   strings.Builder // current query, possibly on multiple lines
 
-	tmpls    *sql2http.TemplateSet
-	tmplHtml *html.Template
-	tmplTex  *tex.Template
+	tmpls    *Templates
 }
 
 func (p *parser) next(line string) error {
@@ -129,32 +142,13 @@ func (p *parser) register() error {
 		p.queries[len(p.queries)-1].Q = p.query.String()
 		p.query.Reset()
 	}
-	ts := p.tmpls
-	log.Println(p.path, ":", ts.Get(html.Ext).(*html.Template).Name())
-	name := strings.TrimPrefix(p.path, "/")
-	if th, tt := p.tmplHtml.Lookup(name), p.tmplTex.Lookup(name); th != nil || tt != nil {
-		log.Println(name, "customize templates:")
-		ts = ts.Clone()
-		if th != nil {
-			log.Println(" ", html.Ext)
-			ts.Register(html.Ext, th)
-			log.Println("default:", p.tmpls.Get(html.Ext).(*html.Template).Name())
-			log.Println(p.path+":", ts.Get(html.Ext).(*html.Template).Name())
-		}
-		if tt != nil {
-			log.Println(" ", tex.Ext)
-			ts.Register(tex.Ext, tt)
-		}
-	}
 	switch p.method {
 	case "GET":
 		log.Printf("GET  %q %+q\n", p.path, p.queries)
-		p.SqlGET(p.path, p.queries, ts)
-		log.Println(p.path, ":", ts.Get(html.Ext).(*html.Template).Name())
+		p.SqlGET(p.path, p.queries, p.tmpls.GetTemplateSet(p.path))
 	case "POST":
 		log.Printf("POST %q %+q\n", p.path, p.queries)
-		p.SqlPOST(p.path, p.queries, ts)
-		log.Println(p.path, ":", ts.Get(html.Ext).(*html.Template).Name())
+		p.SqlPOST(p.path, p.queries, p.tmpls.GetTemplateSet(p.path))
 	default:
 		return fmt.Errorf("invalid HTTP method %v", p.method)
 	}
