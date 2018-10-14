@@ -2,8 +2,9 @@ package sql2http
 
 // Query represents a single query, with its name.
 type Query struct {
-	Name string
-	Q    string
+	Name   string
+	Q      string
+	Params []string
 }
 
 // Row represents a row of query result. The Headers are present for

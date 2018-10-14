@@ -11,7 +11,6 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/jmoiron/sqlx"
 	"github.com/julienschmidt/httprouter"
 )
 
@@ -28,16 +27,16 @@ type page struct {
 
 	// fn is set to either runQueries or runExecs depending on the
 	// registered http method.
-	fn func(context.Context, *sqlx.DB, *Result) error
-	db *sqlx.DB // the database connection
+	fn func(context.Context, *sql.DB, *Result) error
+	db *sql.DB // the database connection
 }
 
 // runQueries runs the list of res.Queries in a single transaction. Then
 // the resulting rows are saved in res.Tables.
 //
 // page.fn is set to runQueries if the page is registered as a GET handler.
-func runQueries(ctx context.Context, db *sqlx.DB, res *Result) error {
-	tx, err := db.BeginTxx(ctx, &sql.TxOptions{
+func runQueries(ctx context.Context, db *sql.DB, res *Result) error {
+	tx, err := db.BeginTx(ctx, &sql.TxOptions{
 		Isolation: IsolationLevel,
 		ReadOnly:  true,
 	})
@@ -47,7 +46,8 @@ func runQueries(ctx context.Context, db *sqlx.DB, res *Result) error {
 	defer tx.Rollback()
 	for _, q := range res.Queries {
 		log.Printf("New query: %q\n  %+q\n", q.Q, res.Params)
-		rows, err := sqlx.NamedQueryContext(ctx, tx, q.Q, res.Params)
+		params := prepareParams(q, res.Params)
+		rows, err := tx.QueryContext(ctx, q.Q, params...)
 		if err != nil {
 			// TODO: format err?
 			return err
@@ -64,14 +64,15 @@ func runQueries(ctx context.Context, db *sqlx.DB, res *Result) error {
 // runExecs runs the list of res.Queries in a single transaction.
 //
 // page.fn is set to runExecs if the page is registered as a POST handler.
-func runExecs(ctx context.Context, db *sqlx.DB, res *Result) error {
-	tx, err := db.BeginTxx(ctx, &sql.TxOptions{Isolation: IsolationLevel})
+func runExecs(ctx context.Context, db *sql.DB, res *Result) error {
+	tx, err := db.BeginTx(ctx, &sql.TxOptions{Isolation: IsolationLevel})
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
 	for _, q := range res.Queries {
-		_, err := sqlx.NamedExecContext(ctx, tx, q.Q, res.Params)
+		params := prepareParams(q, res.Params)
+		_, err := tx.ExecContext(ctx, q.Q, params...)
 		if err != nil {
 			// TODO: format err?
 			return err
@@ -80,26 +81,41 @@ func runExecs(ctx context.Context, db *sqlx.DB, res *Result) error {
 	return tx.Commit()
 }
 
+func prepareParams(q Query, p map[string]interface{}) []interface{} {
+	args := make([]interface{}, len(q.Params))
+	for i, name := range q.Params {
+		args[i] = sql.Named(name, p[name])
+	}
+	return args
+}
+
 // readRows reads all data from rows into tbl. It expects a freshly
 // returned rows from a Query, and takes care of closing it once done.
-func readRows(tbl *Table, rows *sqlx.Rows) error {
+func readRows(tbl *Table, rows *sql.Rows) error {
 	defer rows.Close()
 	var err error
 	tbl.Header, err = rows.Columns()
 	if err != nil {
 		return err
 	}
+	rowptr := make([]interface{}, len(tbl.Header))
 	for rows.Next() {
-		vals, err := rows.SliceScan()
-		if err != nil {
+		row := Row{
+			Header: tbl.Header,
+			Values: make([]interface{}, len(tbl.Header)),
+		}
+		for i := range rowptr {
+			rowptr[i] = &row.Values[i]
+		}
+		if err := rows.Scan(rowptr...); err != nil {
 			return err
 		}
-		for i := range vals {
-			if p, ok := vals[i].([]byte); ok {
-				vals[i] = string(p)
+		for i, v := range row.Values {
+			if p, ok := v.([]byte); ok {
+				row.Values[i] = string(p)
 			}
 		}
-		tbl.Rows = append(tbl.Rows, Row{Header: tbl.Header, Values: vals})
+		tbl.Rows = append(tbl.Rows, row)
 	}
 	return rows.Err()
 }
