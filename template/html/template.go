@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/detaoin/sql2http"
+	"github.com/detaoin/sql2http/sql2http"
 )
 
 func init() {

@@ -7,7 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/detaoin/sql2http"
+	"github.com/detaoin/sql2http/sql2http"
 	_ "github.com/detaoin/sql2http/template/csv"
 	_ "github.com/detaoin/sql2http/template/html"
 	_ "github.com/detaoin/sql2http/template/json"

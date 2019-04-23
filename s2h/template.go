@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/detaoin/sql2http"
+	"github.com/detaoin/sql2http/sql2http"
 	"github.com/detaoin/sql2http/template/html"
 	"github.com/detaoin/sql2http/template/tex"
 )

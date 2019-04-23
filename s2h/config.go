@@ -9,7 +9,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/detaoin/sql2http"
+	"github.com/detaoin/sql2http/sql2http"
 )
 
 // parseConfig tries to parse the configuration file. It can be either of:

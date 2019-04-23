@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/detaoin/sql2http"
+	"github.com/detaoin/sql2http/sql2http"
 	"github.com/tealeg/xlsx"
 )
 
