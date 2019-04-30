@@ -19,7 +19,7 @@ First you will need some prerequisites:
 Then you can build the tool; assuming `go` and `gcc` are both in your
 `PATH`, run in a shell (Bourne shell compatible, e.g. bash)
 
-	$ go get -v github.com/detaoin/sql2http/cmd/s2h
+	$ go get -v github.com/detaoin/sql2http/s2h
 
 If everything went well, you should find the executable `s2h` (or
 `s2h.exe` on Windows) inside directory `$GOPATH/bin/`.
@@ -104,7 +104,7 @@ Each page specification contains the following parameters:
 The server will register a HTTP handler for each page specification; each
 request matching the given URL pattern and HTTP method will trigger the
 execution of all the specified SQL queries in a single transaction. If
-it was successful the result strucuture (see below) is formatted using
+it was successful the result structure (see below) is formatted using
 the template matching the file extension of the requested URL.
 
 The result structure is:
