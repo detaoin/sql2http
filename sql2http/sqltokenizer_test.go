@@ -11,7 +11,7 @@ var testcases = []struct {
 		[]item{},
 	},
 	{
-		"SELECT /* comment /* nested */ ... */ \"me\" FROM them \t-- comment\n'a string' + 0.12e-5",
+		"SELECT /* comment /* nested */ ... */ \"me\" FROM them \t-- comment\n'a string' + 0.12e-5+.012",
 		[]item{
 			item{typ: itemIdentifier, val: "SELECT"},
 			item{typ: itemSpace, val: " "},
@@ -28,11 +28,9 @@ var testcases = []struct {
 			item{typ: itemSpace, val: " "},
 			item{typ: itemOperator, val: "+"},
 			item{typ: itemSpace, val: " "},
-			item{typ: itemNumeric, val: "0"},
-			item{typ: itemNumeric, val: ".12"},
-			item{typ: itemIdentifier, val: "e"},
-			item{typ: itemOperator, val: "-"},
-			item{typ: itemNumeric, val: "5"},
+			item{typ: itemNumeric, val: "0.12e-5"},
+			item{typ: itemOperator, val: "+"},
+			item{typ: itemNumeric, val: ".012"},
 		},
 	},
 }

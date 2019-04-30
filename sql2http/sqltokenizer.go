@@ -190,6 +190,7 @@ func lexAny(l *lexer) stateFn {
 		}
 	case '.':
 		if n := l.peek(); n >= '0' && n <= '9' {
+			l.backup() // lexNumeric must see the '.'
 			return lexNumeric
 		}
 	}
@@ -273,16 +274,34 @@ func lexDoubleQuoted(l *lexer) stateFn {
 }
 
 func lexNumeric(l *lexer) stateFn {
+	isfraction := false
+	isexponent := false
+Loop:
 	for {
 		c := l.next()
 		switch {
 		case c >= '0' && c <= '9':
+		case c == 'e' || c == 'E':
+			if isexponent {
+				break Loop
+			}
+			isexponent = true
+			isfraction = false // fraction allowed in exponent
+			if c := l.peek(); c == '+' || c == '-' {
+				l.next()
+			}
+		case c == '.':
+			if isfraction {
+				break Loop
+			}
+			isfraction = true
 		default:
-			l.backup()
-			l.emit(itemNumeric)
-			return lexAny
+			break Loop
 		}
 	}
+	l.backup()
+	l.emit(itemNumeric)
+	return lexAny
 }
 
 // lexComment scans the current comment until the next newline. We know
