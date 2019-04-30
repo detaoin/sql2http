@@ -91,7 +91,7 @@ func (i item) String() string {
 type itemType int
 
 const (
-	itemEOF          itemType = iota
+	itemEOF itemType = iota
 	itemSpace
 	itemComment
 	itemBlockComment
@@ -114,10 +114,10 @@ type lexer struct {
 }
 
 var (
-	spaceChars = " \t\r\n"
+	spaceChars    = " \t\r\n"
 	operatorStart = "?()<=>|:.![],;+-^*/%"
-	delimiters = spaceChars + "'\"()[],;$:.+-*/<>=~!@#%^&|`?"
-	oneCharOps = "()[],;.+-^*/%<>="
+	delimiters    = spaceChars + "'\"()[],;$:.+-*/<>=~!@#%^&|`?"
+	oneCharOps    = "()[],;.+-^*/%<>="
 )
 
 func lexSQL(input string) *lexer {
@@ -248,7 +248,7 @@ func lexIdentifier(l *lexer) stateFn {
 	}
 }
 
-func lexQuoted(l *lexer, q byte) stateFn {
+func lexQuoted(l *lexer, q byte, it itemType) stateFn {
 	for {
 		i := strings.IndexByte(l.input[l.pos:], q)
 		if i >= 0 {
@@ -260,16 +260,16 @@ func lexQuoted(l *lexer, q byte) stateFn {
 			break
 		}
 	}
-	l.emit(itemStringLiteral)
+	l.emit(it)
 	return lexAny
 }
 
 func lexSingleQuoted(l *lexer) stateFn {
-	return lexQuoted(l, '\'')
+	return lexQuoted(l, '\'', itemStringLiteral)
 }
 
 func lexDoubleQuoted(l *lexer) stateFn {
-	return lexQuoted(l, '"')
+	return lexQuoted(l, '"', itemQuotedIdentifier)
 }
 
 func lexNumeric(l *lexer) stateFn {
