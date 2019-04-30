@@ -260,6 +260,7 @@ func lexQuoted(l *lexer, q byte, it itemType) stateFn {
 		if l.peek() != rune(q) {
 			break
 		}
+		l.next()
 	}
 	l.emit(it)
 	return lexAny
