@@ -153,6 +153,44 @@ The following default templates are compiled in `cmd/s2h`:
 
 If the requested URL has no file extension, it defaults to using the `.html` template.
 
+### Config: SQL query parameters
+
+In the SQL queries (of the configuration file) can use parameters
+(e.g. `:name`) to interpolate the query with request specific values.
+
+For example, the following page specification in the config file (yaml
+for this example):
+
+	- pattern: /name/:id
+	  method: GET
+	  queries:
+	    found: SELECT * FROM test WHERE num = :id
+	    form: SELECT :s
+
+If a GET request is done for path `/name/5.html?s=something`, then the
+first query _found_ will use `5` in the `WHERE` clause, and the _form_
+query will return `something`.
+
+The colon parameters are taken from the URL pattern first, then if not
+found there from the url-encoded form data and POST data (in case of
+POST requests).
+
+### Config: templates
+
+By default, the template used to render the `Result` struct is chosen
+using the request path extension as key, falling back to `.html` of no
+extension is specified.
+
+However, first if there exists a file under `s2h.template/` having
+the same relative path (except for extension) as the URL pattern which
+matches a request, then that specific template is used.
+
+For example, if a request matches pattern `/name/:id`, then depending on
+the file extension, one of these templates is used instead of the default:
+
+- `s2h.template/name/:id.html` if the request ends in `.html` or no extension,
+- `s2h.template/name/:id.tex` if the request ends in `.tex`
+
 cgo or no cgo?
 --------------
 
