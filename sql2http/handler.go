@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"path"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/julienschmidt/httprouter"
@@ -119,19 +120,32 @@ func bindNamedArgs(driver string, q *Query) {
 // placeholderType represents the possible placeholders that database
 // engines use. The 32 LSBs encoded the rune used as special
 // character. The 32 MSBs contain flags.
-type placeholderType int64
+type placeholderType uint64
 
 const (
-	placeholderSIMPLE placeholderType = iota
+	placeholderSIMPLE placeholderType = iota << 32
 	placeholderNUMBER
 	placeholderNAMED
 )
 
-func (p placeholderType) typ() placeholderType { return p & 0xffff0000 }
+func (p placeholderType) String() string {
+	switch p.typ() {
+	case placeholderSIMPLE:
+		return "placeholder[SIMPLE](" + string(rune(p)) + ")"
+	case placeholderNUMBER:
+		return "placeholder[NUMBER](" + string(rune(p)) + ")"
+	case placeholderNAMED:
+		return "placeholder[NAMED](" + string(rune(p)) + ")"
+	default:
+		return "placeholder[" + strconv.FormatUint(uint64(p>>32), 16) + "](" + string(rune(p)) + ")"
+	}
+}
+
+func (p placeholderType) typ() placeholderType { return p & (0xffffffff << 32) }
 
 func (p placeholderType) translate(s string, i int) string {
 	// fastpath if no translation needed
-	if p == placeholderNUMBER|placeholderType(':') {
+	if p == placeholderNAMED|placeholderType(':') {
 		return s
 	}
 	switch p.typ() {
