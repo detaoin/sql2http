@@ -147,7 +147,7 @@ func (p placeholderType) translate(s string, i int) string {
 
 func namedArgTranslator(driver string) placeholderType {
 	switch driver {
-	case "sqlite3":
+	case "sqlite3", "oci8":
 		return placeholderNAMED|placeholderType(':')
 	case "postgres", "ql":
 		return placeholderNUMBER|placeholderType('$')

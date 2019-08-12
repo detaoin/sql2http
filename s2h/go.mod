@@ -13,6 +13,7 @@ require (
 	github.com/edsrzf/mmap-go v0.0.0-20170320065105-0bce6a688712 // indirect
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/lib/pq v1.1.0
+	github.com/mattn/go-oci8 v0.0.0-20190524004114-abcafa411cc8
 	github.com/mattn/go-sqlite3 v1.10.0
 	github.com/remyoudompheng/bigfft v0.0.0-20190321074620-2f0d2b0e0001 // indirect
 	gopkg.in/yaml.v2 v2.2.2
