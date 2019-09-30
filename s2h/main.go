@@ -7,12 +7,12 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/detaoin/sql2http/sql2http"
-	_ "github.com/detaoin/sql2http/template/csv"
-	_ "github.com/detaoin/sql2http/template/html"
-	_ "github.com/detaoin/sql2http/template/json"
-	_ "github.com/detaoin/sql2http/template/tex"
-	_ "github.com/detaoin/sql2http/template/xlsx"
+	"git.sr.ht/~detaoin/sql2http"
+	_ "git.sr.ht/~detaoin/sql2http/template/csv"
+	_ "git.sr.ht/~detaoin/sql2http/template/html"
+	_ "git.sr.ht/~detaoin/sql2http/template/json"
+	_ "git.sr.ht/~detaoin/sql2http/template/tex"
+	_ "git.sr.ht/~detaoin/sql2http/template/xlsx"
 )
 
 var (

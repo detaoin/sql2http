@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/detaoin/sql2http/sql2http"
+	"git.sr.ht/~detaoin/sql2http"
 )
 
 func init() {

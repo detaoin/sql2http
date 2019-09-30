@@ -19,7 +19,7 @@ First you will need some prerequisites:
 Then you can build the tool; assuming `go` and `gcc` are both in your
 `PATH`, run in a shell (Bourne shell compatible, e.g. bash)
 
-	$ go get -v github.com/detaoin/sql2http/s2h
+	$ go get -v git.sr.ht/~detaoin/sql2http/s2h
 
 If everything went well, you should find the executable `s2h` (or
 `s2h.exe` on Windows) inside directory `$GOPATH/bin/`.
@@ -144,12 +144,12 @@ The result structure is:
 
 The following default templates are compiled in `cmd/s2h`:
 
-- `.html`: [github.com/detaoin/sql2http/template/html](github.com/detaoin/sql2http/template/html)
-- `.tex`: [github.com/detaoin/sql2http/template/tex](github.com/detaoin/sql2http/template/tex)
-- `.json`: [github.com/detaoin/sql2http/template/json](github.com/detaoin/sql2http/template/json)
-- `.csv`: [github.com/detaoin/sql2http/template/csv](github.com/detaoin/sql2http/template/csv)
-- `.tsv`: [github.com/detaoin/sql2http/template/tsv](github.com/detaoin/sql2http/template/tsv)
-- `.xlsx`: [github.com/detaoin/sql2http/template/xlsx](github.com/detaoin/sql2http/template/xlsx)
+- `.html`: [git.sr.ht/~detaoin/sql2http/template/html](git.sr.ht/~detaoin/sql2http/template/html)
+- `.tex`: [git.sr.ht/~detaoin/sql2http/template/tex](git.sr.ht/~detaoin/sql2http/template/tex)
+- `.json`: [git.sr.ht/~detaoin/sql2http/template/json](git.sr.ht/~detaoin/sql2http/template/json)
+- `.csv`: [git.sr.ht/~detaoin/sql2http/template/csv](git.sr.ht/~detaoin/sql2http/template/csv)
+- `.tsv`: [git.sr.ht/~detaoin/sql2http/template/tsv](git.sr.ht/~detaoin/sql2http/template/tsv)
+- `.xlsx`: [git.sr.ht/~detaoin/sql2http/template/xlsx](git.sr.ht/~detaoin/sql2http/template/xlsx)
 
 If the requested URL has no file extension, it defaults to using the `.html` template.
 
@@ -194,7 +194,7 @@ the file extension, one of these templates is used instead of the default:
 cgo or no cgo?
 --------------
 
-The main package (`github.com/detaoin/sql2http`) let's you decide which
+The main package (`git.sr.ht/~detaoin/sql2http`) let's you decide which
 SQL drivers and templates you want to use, by importing them (maybe with
 an _emtpy_ import) to have their `init` function register them.
 

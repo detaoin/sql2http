@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/detaoin/sql2http/sql2http"
-	"github.com/detaoin/sql2http/template/html"
-	"github.com/detaoin/sql2http/template/tex"
+	"git.sr.ht/~detaoin/sql2http"
+	"git.sr.ht/~detaoin/sql2http/template/html"
+	"git.sr.ht/~detaoin/sql2http/template/tex"
 )
 
 type Templates struct {

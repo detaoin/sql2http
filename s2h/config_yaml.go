@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	"github.com/detaoin/sql2http/sql2http"
+	"git.sr.ht/~detaoin/sql2http"
 	"gopkg.in/yaml.v2"
 )
 
